@@ -1,0 +1,10 @@
+[target.riscv32imc-unknown-none-elf]
+# runner = "probe-rs run --chip ftdi"
+runner = "app/flash.sh"
+rustflags = [
+  "-C", "link-arg=-Tmemory.x",
+  "-C", "link-arg=-Tlink.x",
+]
+
+[build]
+target = "riscv32imc-unknown-none-elf"
