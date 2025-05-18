@@ -1,0 +1,21 @@
+[package]
+name = "mik32-hal"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+embedded-hal = "1.0.0"
+embedded-hal-nb = "1.0.0"
+embedded-io = "0.6.1"
+fugit = "0.3.7"
+mik32-pac = { path = "../mik32-pac" }
+nb = "1.1.0"
+riscv = { version = "0.13.0", features = ["critical-section-single-hart"] }
+
+[dev-dependencies]
+panic-halt = "1.0.0"
+riscv-rt = { version = "0.14.0", features = ["single-hart"] }
+
+[lib]
+test = false
+bench = false

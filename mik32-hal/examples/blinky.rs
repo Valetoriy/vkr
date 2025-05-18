@@ -1,16 +1,20 @@
 #![no_main]
 #![no_std]
 
+use mik32_hal::{clocks::Clocks, pac, prelude::*};
+use mik32_pac::Pm;
 use panic_halt as _;
 use riscv::asm::delay;
 
 #[riscv_rt::entry]
 fn main() -> ! {
-    let p = mik32_pac::Peripherals::take().unwrap();
+    let p = pac::Peripherals::take().unwrap();
 
-    let pm = p.pm;
-    pm.sys_clk_mux().write(|w| w.mux().osc32m());
+    let pm = p.pm.constrain();
+    let wu = p.wake_up.constrain();
+    let _clocks = Clocks::freeze(pm, wu);
 
+    let pm = unsafe { Pm::steal() };
     pm.clk_apb_p_set().write(|w| w.gpio_2().set_bit());
 
     let pc = p.pad_config;
