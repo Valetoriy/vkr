@@ -1,8 +1,13 @@
 #![no_main]
 #![no_std]
 
-use mik32_hal::{clocks::Clocks, pac, prelude::*};
-use mik32_pac::Pm;
+use embedded_hal::digital::{InputPin, StatefulOutputPin};
+use mik32_hal::{
+    clocks::Clocks,
+    gpio::{DS, GpioExt},
+    pac,
+    prelude::*,
+};
 use panic_halt as _;
 use riscv::asm::delay;
 
@@ -14,19 +19,15 @@ fn main() -> ! {
     let wu = p.wake_up.constrain();
     let _clocks = Clocks::freeze(pm, wu);
 
-    let pm = unsafe { Pm::steal() };
-    pm.clk_apb_p_set().write(|w| w.gpio_2().set_bit());
-
-    let pc = p.pad_config;
-    pc.pad2_cfg().write(|w| w.port_2_7().func1_gpio());
-    let gpio2 = p.gpio_2;
-    gpio2.direction_out().write(|w| unsafe { w.bits(1 << 7) });
+    let gpio2 = p.gpio_2.split();
+    let mut button = gpio2.p2_6.into_pull_up_input(&p.pad_config);
+    let mut led = gpio2.p2_7.into_output(&p.pad_config);
+    led.set_ds(&p.pad_config, DS::_8mA);
 
     loop {
-        gpio2.output().modify(|r, w| {
-            let bits = r.bits() ^ (1 << 7);
-            unsafe { w.bits(bits) }
-        });
+        if button.is_high().unwrap() {
+            led.toggle().unwrap();
+        }
         delay(1000000);
     }
 }
