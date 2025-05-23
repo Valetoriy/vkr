@@ -164,7 +164,9 @@ impl<const P: u8, const N: u8, M> Pin<P, N, M> {
             _ => unreachable!(),
         };
         let pad_cfg = unsafe { &mut (*pad_cfg) };
-        *pad_cfg = (MODE::MODE as u32 & 0b11) << (N * 2);
+        let mask = 0b11 << (N * 2);
+        let value = (MODE::MODE as u32 & 0b11) << (N * 2);
+        *pad_cfg = (*pad_cfg & !mask) | value;
 
         let gpio = unsafe { &(*gpiox::<P>()) };
         match MODE::MODE {
@@ -186,7 +188,7 @@ impl<const P: u8, const N: u8, M> Pin<P, N, M> {
                 gpio.direction_out()
                     .modify(|_, w| unsafe { w.bits(1 << N) });
             }
-            _ => return,
+            _ => (),
         }
     }
 

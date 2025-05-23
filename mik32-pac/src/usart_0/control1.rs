@@ -540,8 +540,8 @@ pub enum M {
     _8bits = 0,
     #[doc = "1: 9 бит данных"]
     _9bits = 1,
-    #[doc = "65536: 7 бит данных"]
-    _7bits = 65536,
+    #[doc = "2: 7 бит данных"]
+    _7bits = 2,
 }
 impl From<M> for u32 {
     #[inline(always)]
@@ -562,7 +562,7 @@ impl MR {
         match self.bits {
             0 => Some(M::_8bits),
             1 => Some(M::_9bits),
-            65536 => Some(M::_7bits),
+            2 => Some(M::_7bits),
             _ => None,
         }
     }

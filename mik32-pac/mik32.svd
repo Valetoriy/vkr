@@ -13045,7 +13045,7 @@ SPIFI_SCK = AHB_CLK / 2^(SCK_DIV+1)</description>
                 <enumeratedValue>
                   <name>7bits</name>
                   <description>7 бит данных</description>
-                  <value>65536</value>
+                  <value>2</value>
                 </enumeratedValue>
               </enumeratedValues>
             </field>
