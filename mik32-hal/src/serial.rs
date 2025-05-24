@@ -483,6 +483,7 @@ impl<USART: Instance> serial::Read<u16> for Serial<USART> {
     }
 }
 
+// embedded_io
 use embedded_io::Write;
 
 impl embedded_io::Error for Error {
@@ -491,7 +492,6 @@ impl embedded_io::Error for Error {
     }
 }
 
-// embedded_io
 impl<USART: Instance> embedded_io::ErrorType for Serial<USART> {
     type Error = Error;
 }
