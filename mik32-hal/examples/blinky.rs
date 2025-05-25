@@ -4,7 +4,6 @@
 use embedded_hal::digital::{InputPin, OutputPin};
 use mik32_hal::{clocks::Clocks, gpio::GpioExt, pac, prelude::*};
 use panic_halt as _;
-use riscv::asm::delay;
 
 #[riscv_rt::entry]
 fn main() -> ! {
@@ -21,6 +20,5 @@ fn main() -> ! {
     loop {
         let pressed = button.is_high().unwrap();
         led.set_state(pressed.into()).unwrap();
-        delay(1000000);
     }
 }

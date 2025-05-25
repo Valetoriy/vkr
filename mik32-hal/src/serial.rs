@@ -70,10 +70,10 @@ pub enum Parity {
 use crate::pac::usart_0::control2::Stop1 as StopBits;
 
 pub struct Config {
-    pub baudrate: Bps,
-    pub wordlength: WordLength,
-    pub parity: Parity,
-    pub stopbits: StopBits,
+    baudrate: Bps,
+    wordlength: WordLength,
+    parity: Parity,
+    stopbits: StopBits,
 }
 
 impl Config {
@@ -416,8 +416,7 @@ impl<USART: Instance> ErrorType for Serial<USART> {
 
 impl<USART: Instance> serial::Write<u8> for Tx<USART> {
     fn write(&mut self, word: u8) -> nb::Result<(), Self::Error> {
-        self.write_u8(word)?;
-        Ok(())
+        self.write_u8(word)
     }
 
     fn flush(&mut self) -> nb::Result<(), Self::Error> {
@@ -449,25 +448,21 @@ impl<USART: Instance> serial::Read<u16> for Rx<USART> {
 
 impl<USART: Instance> serial::Write<u8> for Serial<USART> {
     fn write(&mut self, word: u8) -> nb::Result<(), Self::Error> {
-        self.tx.write_u8(word).unwrap();
-        Ok(())
+        self.tx.write_u8(word)
     }
 
     fn flush(&mut self) -> nb::Result<(), Self::Error> {
-        self.tx.flush().unwrap();
-        Ok(())
+        self.tx.flush()
     }
 }
 
 impl<USART: Instance> serial::Write<u16> for Serial<USART> {
     fn write(&mut self, word: u16) -> nb::Result<(), Self::Error> {
-        self.tx.write_u16(word).unwrap();
-        Ok(())
+        self.tx.write_u16(word)
     }
 
     fn flush(&mut self) -> nb::Result<(), Self::Error> {
-        self.tx.flush().unwrap();
-        Ok(())
+        self.tx.flush()
     }
 }
 
@@ -484,8 +479,6 @@ impl<USART: Instance> serial::Read<u16> for Serial<USART> {
 }
 
 // embedded_io
-use embedded_io::Write;
-
 impl embedded_io::Error for Error {
     fn kind(&self) -> embedded_io::ErrorKind {
         embedded_io::ErrorKind::Other
@@ -504,40 +497,61 @@ impl<USART: Instance> embedded_io::ErrorType for Rx<USART> {
     type Error = Error;
 }
 
-impl<USART: Instance> Write for Tx<USART> {
-    fn write(&mut self, bytes: &[u8]) -> Result<usize, Self::Error> {
-        let mut i = 0;
-        for byte in bytes.iter() {
-            match self.write_u8(*byte) {
-                Ok(_) => {
-                    i += 1;
-                }
-                Err(nb::Error::WouldBlock) => {
-                    return Ok(i);
-                }
-                Err(nb::Error::Other(e)) => {
-                    return Err(e);
-                }
+impl<USART: Instance> embedded_io::Write for Tx<USART> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error> {
+        if buf.is_empty() {
+            return Ok(0);
+        }
+        nb::block!(serial::Write::write(self, buf[0])).unwrap();
+        let mut count = 1;
+        for byte in buf.iter().skip(1) {
+            match serial::Write::write(self, *byte) {
+                Ok(()) => count += 1,
+                Err(nb::Error::WouldBlock) => break,
+                Err(nb::Error::Other(o)) => return Err(o),
             }
         }
-        Ok(i)
+        Ok(count)
     }
 
     fn flush(&mut self) -> Result<(), Self::Error> {
-        self.bflush()?;
-        Ok(())
+        self.bflush()
     }
 }
 
-impl<USART: Instance> Write for Serial<USART>
-where
-    Tx<USART>: Write<Error = Error>,
-{
-    fn write(&mut self, bytes: &[u8]) -> Result<usize, Self::Error> {
-        self.tx.write(bytes)
+impl<UART: Instance> embedded_io::Read for Rx<UART> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize, Self::Error> {
+        if buf.is_empty() {
+            return Ok(0);
+        }
+        buf[0] = nb::block!(serial::Read::read(self)).unwrap();
+        let mut count = 1;
+        for byte in buf.iter_mut().skip(1) {
+            match serial::Read::read(self) {
+                Ok(b) => {
+                    *byte = b;
+                    count += 1
+                }
+                Err(nb::Error::WouldBlock) => break,
+                Err(nb::Error::Other(o)) => return Err(o),
+            }
+        }
+        Ok(count)
+    }
+}
+
+impl<USART: Instance> embedded_io::Write for Serial<USART> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error> {
+        self.tx.write(buf)
     }
 
     fn flush(&mut self) -> Result<(), Self::Error> {
-        Write::flush(&mut self.tx)
+        self.tx.bflush()
+    }
+}
+
+impl<UART: Instance> embedded_io::Read for Serial<UART> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize, Self::Error> {
+        self.rx.read(buf)
     }
 }
