@@ -3,6 +3,9 @@ members = ["mik32-pac", "mik32-hal"]
 resolver = "3"
 
 [profile.dev]
+codegen-units = 1
+debug = true
+lto = true
 opt-level = "z"
 
 [profile.release]

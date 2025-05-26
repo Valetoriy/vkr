@@ -18,7 +18,7 @@ mod sealed {
         fn enable();
     }
 }
-use mik32_pac::Pm;
+use crate::pac::Pm;
 pub(crate) use sealed::Instance;
 
 impl Instance for Usart0 {
@@ -60,14 +60,14 @@ pub enum Error {
     Other,
 }
 
-use crate::pac::usart_0::control1::M as WordLength;
+pub use crate::pac::usart_0::control1::M as WordLength;
 
 pub enum Parity {
     ParityNone,
     ParityEven,
     ParityOdd,
 }
-use crate::pac::usart_0::control2::Stop1 as StopBits;
+pub use crate::pac::usart_0::control2::Stop1 as StopBits;
 
 pub struct Config {
     baudrate: Bps,

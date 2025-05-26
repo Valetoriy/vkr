@@ -1,7 +1,8 @@
 //! Настройка тактирования
 
-use crate::pac::{
-    Pm, WakeUp, pm::sys_clk_mux::ForceMux as ForceSysOsc, pm::sys_clk_mux::Mux as SysClkSrc,
+use crate::pac::{Pm, WakeUp};
+pub use crate::pac::{
+    pm::sys_clk_mux::ForceMux as ForceSysOsc, pm::sys_clk_mux::Mux as SysClkSrc,
     wake_up::clocks_sys::Force32kClk as FreqMonClkSrc,
 };
 use crate::prelude::*;
